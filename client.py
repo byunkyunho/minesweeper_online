@@ -1,7 +1,6 @@
 import pygame as pg
 import random as rd
 import time
-import sys
 import threading
 import socket
 import json
