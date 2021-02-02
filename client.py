@@ -269,7 +269,7 @@ def update_main_array():
                     die(red_block_list)
     
 
-    elif state == 1
+    elif state == 1:
 
         if main_array[mouse_y][mouse_x] == 0:
             
