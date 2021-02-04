@@ -1,17 +1,15 @@
 import pygame as pg
 import random as rd
 import time
-import sys
 import threading
 import socket
 import json
-import pyautogui as pyt
 
 pg.init()
 pg.key.set_repeat(1, 1)
 
-HOST = YOUR_IP #YOUR_IP
-PORT = 6565
+HOST = '192.168.1.50'
+PORT = 5000
 
 width = 680
 height = 430
@@ -190,9 +188,9 @@ def d_board(i,j,x, state, main):
         pg.draw.polygon(screen, (255,0,0), [((x+10)+j*30, 122+i*30), ((x+10)+j*30, 108 +i*30),((x+23)+j*30, 115+i*30)])
         pg.draw.line(screen, (0,0,0), ((x+9)+j*30, 108 +i*30), ((x+9)+j*30, 128 +i*30), 3)
 
-def d_bomb(i,j,x, main):
+def d_bomb(i,j,x, main, red):
     if main[i][j] == 10:
-        if (i, j) in red_block:
+        if [i,j] in red or (i,j) in red:
             pg.draw.rect(screen, (255,0,0), [x+j*30, 105+i*30, 30,30])
         else:
             pg.draw.rect(screen, (196,196,196), [x+j*30, 105+i*30, 30,30])
@@ -320,7 +318,7 @@ def connect():
             pass
 
 def update_data():
-    global other_main, other_state, connecting, other_bomb, other_die, other_win
+    global other_main, other_state, connecting, other_bomb, other_die, other_win, other_red_block
     connecting = True
     while connecting:
         try:
@@ -330,7 +328,8 @@ def update_data():
             other_bomb = data['bomb']
             other_die = data['die']
             other_win = data['win']
-            send_data = json.dumps({"state":state_array,"main":main_array,"bomb":bomb,"die":gameover,"win":win})
+            other_red_block = data['red_block']
+            send_data = json.dumps({"state":state_array,"main":main_array,"bomb":bomb,"die":gameover,"win":win,"red_block":red_block})
             other_socket.sendall(send_data.encode())
         except:
             connecting = False
@@ -349,6 +348,7 @@ other_die = False
 other_win = False
 down_button = 0
 running = True
+other_red_block = []
 
 connect_thread = threading.Thread(target=update_data)
 connect_thread.daemon = True
@@ -401,10 +401,10 @@ while running:
             d_board(i,j,25, state_array, main_array)
             d_board(i,j,355, other_state, other_main)
 
-            if gameover:
-                d_bomb(i,j,25, main_array)
             if other_die:
-                d_bomb(i,j,355, other_main)
+                d_bomb(i,j,355, other_main, other_red_block)
+            if gameover:
+                d_bomb(i,j,25, main_array, red_block)
     d_line()
     d_time()
     d_num_bomb()
@@ -423,12 +423,12 @@ while running:
 
     if count:
         if round(time.time() - count_time) < 5:
-            screen.blit(start_text_list[4-round(time.time()-count_time)], (300, 120))
+            screen.blit(start_text_list[4-round(time.time()-count_time)], (300, 140))
         else:
             count = False
             game_set()
             if start_time:
                 start = time.time()
                 start_time = False
-    
+
     pg.display.update()
