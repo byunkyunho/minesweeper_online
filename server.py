@@ -8,7 +8,7 @@ import json
 pg.init()
 pg.key.set_repeat(1, 1)
 
-HOST = '192.168.1.50'
+HOST = YOUR_IP # YOUR_IP
 PORT = 5000
 
 width = 680
