@@ -8,7 +8,7 @@ import json
 pg.init()
 pg.key.set_repeat(1, 1)
 
-HOST = YOUR_IP # YOUR_IP
+HOST = YOUr_IP # YOUR IP
 PORT = 5000
 
 width = 680
@@ -71,6 +71,23 @@ def d_block(x1,y1, width, height, center_color, side_gap,ud_gap, flip):
     pg.draw.polygon(screen, block_color[0], [(x1, y1), (x1 + width, y1), (x1, y1 + height)])
     pg.draw.polygon(screen, block_color[1], [(x1 + width, y1), (x1, y1 + height),(x1 + width, y1 + height )])
     pg.draw.rect(screen,  center_color, [ x1 + side_gap,y1 + ud_gap,  width - side_gap*2, height - ud_gap*2])
+
+def all_around_block(start_x, start_y):
+    open_list = [(start_y, start_x)]         
+    copy_list  = []   
+    list_len = 0
+    for a in range(1000):
+        copy_list = [xy for xy in open_list if xy not in copy_list]
+        for y,x in copy_list: 
+            for index, check in for_loop(x,y):
+                if check:
+                    if main_array[y + index[0]][x + index[1]] == 0:
+                        open_list.append((y + index[0], x + index[1]))
+        open_list = list(set(open_list))
+        if list_len == len(open_list):
+            break
+        list_len = len(open_list)
+    return open_list
 
 def set_array():
     global main_array, state_array
@@ -169,6 +186,7 @@ def check_win():
     find = 0
     for y in range(column):
         for x in range(row):
+
             if state_array[y][x] == 0:
                 find += 1
     if (row*column - all_bomb) == find:
@@ -222,7 +240,6 @@ def open_block(open):
                     state_array[y + index[0]][x + index[1]] = 0
 
 def update_main_array():
-    global gameover, main_array, open_list, state_array, red_block, start, now, bomb, count, count_time
     if main_array[mouse_y][mouse_x] == 10:
         die([(mouse_y ,mouse_x)])
     elif state == 0:
@@ -242,22 +259,8 @@ def update_main_array():
                             if state_array[mouse_y + index_y][mouse_x + index_x] != 2:
                                 red_block_list.append((mouse_y + index_y, mouse_x + index_x))
                         elif main_array[mouse_y + index_y][mouse_x + index_x] == 0:
-                            open_list = [(mouse_y+ index_y, mouse_x+ index_x)]         
-                            copy_list  = []   
-                            list_len = 0
-                            for a in range(1000):
-                                copy_list = [xy for xy in open_list if xy not in copy_list]
-                                for y,x in copy_list: 
-                                    for index, check in for_loop(x,y):
-                                        if check:
-                                            if main_array[y + index[0]][x + index[1]] == 0:
-                                                open_list.append((y + index[0], x + index[1]))
-                                open_list = list(set(open_list))
-                                if list_len == len(open_list):
-                                    break
-                                list_len = len(open_list)
 
-                            open_block(open_list)
+                            open_block(all_around_block(mouse_x+index_x, mouse_y+index_y))
 
                         else:
                             if state_array[mouse_y + index_y][mouse_x + index_x] != 2:
@@ -266,26 +269,9 @@ def update_main_array():
                 if red_block_list != []:
                     die(red_block_list)
     
-
     elif state == 1 :
         if main_array[mouse_y][mouse_x] == 0:
-            
-            open_list = [(mouse_y, mouse_x)]         
-            copy_list  = []   
-            list_len = 0
-            for a in range(1000):
-                copy_list = [xy for xy in open_list if xy not in copy_list]
-                for y,x in copy_list: 
-                    for index, check in for_loop(x,y):
-                        if check:
-                            if main_array[y + index[0]][x + index[1]] == 0:
-                                open_list.append((y + index[0], x + index[1]))
-                open_list = list(set(open_list))
-                if list_len == len(open_list):
-                    break
-                list_len = len(open_list)
-
-            open_block(open_list)
+            open_block(all_around_block(mouse_x, mouse_y))
                          
         else:
             state_array[mouse_y][mouse_x] = 0        
